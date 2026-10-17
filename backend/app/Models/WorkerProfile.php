@@ -25,6 +25,7 @@ class WorkerProfile extends Model
         return [
             'is_available' => 'boolean',
             'years_experience' => 'integer',
+            'district' => 'array',
         ];
     }
 

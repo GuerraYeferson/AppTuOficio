@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->string('phone');
-            $table->string('district');
+            $table->json('district');
             $table->text('description');
             $table->unsignedSmallInteger('years_experience')->default(0);
             $table->boolean('is_available')->default(true);
