@@ -493,10 +493,22 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
                       color: AppColors.surfaceContainerHigh,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    // AVATAR: reemplaza el Icon por
-                    // ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.asset('assets/images/avatar_default.png', fit: BoxFit.cover))
-                    child: const Icon(Icons.person,
-                        size: 44, color: AppColors.onSurfaceVariant),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/images/avatar_default.png',
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.person,
+                            size: 44,
+                            color: AppColors.onSurfaceVariant,
+                          );
+                        },
+                      ),
+                    ),
                   ),
                   Positioned(
                     right: -4,

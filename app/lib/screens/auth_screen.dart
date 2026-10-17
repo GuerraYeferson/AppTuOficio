@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
 import '../theme/app_colors.dart';
-import 'worker/worker_shell.dart';
 import 'client/client_shell.dart';
-import 'home_placeholder_screen.dart';
-
+import 'worker/worker_shell.dart';
 
 class AuthScreen extends StatefulWidget {
   /// 'client' o 'worker'
@@ -93,19 +91,19 @@ class _AuthScreenState extends State<AuthScreen> {
     await ApiService.saveToken(res.data['token']);
 
     // Si la cuenta es de otro rol, se cierra la sesión recién abierta
+    // y se muestra el mismo mensaje genérico, sin revelar el rol real
     if (_isLogin && user['role'] != _role) {
       await ApiService.post('/logout');
       await ApiService.clearToken();
       if (!mounted) return;
       setState(() => _loading = false);
-      final esDe = user['role'] == 'worker' ? 'Trabajador' : 'Cliente';
-      _aviso('Esta cuenta es de tipo $esDe. Cambia el rol arriba e intenta de nuevo.');
+      _aviso('Correo o contraseña incorrectos');
       return;
     }
 
-      final Widget destino = user['role'] == 'worker'
-          ? WorkerShell(user: user)
-          : ClientShell(user: user);
+    final Widget destino = user['role'] == 'worker'
+        ? WorkerShell(user: user)
+        : ClientShell(user: user);
 
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => destino),
@@ -172,11 +170,8 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 24),
 
-              // ---------- Selector de rol ----------
-              _RoleSelector(
-                role: _role,
-                onChanged: (r) => setState(() => _role = r),
-              ),
+              // ---------- Rol elegido en la bienvenida ----------
+              _RoleBadge(role: _role),
               const SizedBox(height: 16),
 
               // ---------- Tarjeta principal ----------
@@ -426,96 +421,48 @@ class _AuthScreenState extends State<AuthScreen> {
 // Widgets de apoyo
 // =====================================================================
 
-class _RoleSelector extends StatelessWidget {
-  final String role;
-  final ValueChanged<String> onChanged;
+class _RoleBadge extends StatelessWidget {
+  final String role; // 'client' o 'worker'
 
-  const _RoleSelector({required this.role, required this.onChanged});
+  const _RoleBadge({required this.role});
 
   @override
   Widget build(BuildContext context) {
+    final esCliente = role == 'client';
+
     return Container(
-      padding: const EdgeInsets.all(4),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: AppColors.primaryContainer,
         borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _RoleButton(
-              icon: Icons.person_outline,
-              label: 'Cliente',
-              selected: role == 'client',
-              onTap: () => onChanged('client'),
-            ),
-          ),
-          Expanded(
-            child: _RoleButton(
-              icon: Icons.handyman_outlined,
-              label: 'Trabajador',
-              selected: role == 'worker',
-              onTap: () => onChanged('worker'),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryContainer.withAlpha(90),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _RoleButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _RoleButton({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color =
-        selected ? AppColors.onPrimaryContainer : AppColors.onSurfaceVariant;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 12),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primaryContainer : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primaryContainer.withAlpha(90),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                    color: color,
-                  ),
-            ),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            esCliente ? Icons.person_outline : Icons.handyman_outlined,
+            size: 20,
+            color: AppColors.onPrimaryContainer,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            esCliente ? 'Cliente' : 'Trabajador',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                  color: AppColors.onPrimaryContainer,
+                ),
+          ),
+        ],
       ),
     );
   }

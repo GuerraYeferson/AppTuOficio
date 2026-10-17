@@ -277,10 +277,21 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
                     ),
                   ],
                 ),
-                // AVATAR: reemplaza el Icon por
-                // ClipOval(child: Image.asset('assets/images/avatar_default.png', fit: BoxFit.cover))
-                child: const Icon(Icons.person,
-                    size: 52, color: AppColors.onSurfaceVariant),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/avatar_default.png',
+                    width: 96,
+                    height: 96,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.person,
+                        size: 52,
+                        color: AppColors.onSurfaceVariant,
+                      );
+                    },
+                  ),
+                ),
               ),
               Positioned(
                 right: 0,

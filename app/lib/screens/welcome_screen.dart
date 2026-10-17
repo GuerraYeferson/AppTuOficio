@@ -26,15 +26,11 @@ class WelcomeScreen extends StatelessWidget {
               children: [
                 // LOGO: reemplaza el Icon por
                 // Image.asset('assets/images/logo.png', fit: BoxFit.contain)
-                Container(
-                  width: 48,
-                  height: 48,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.handyman, color: AppColors.tertiary),
+                Image.asset(
+                  'assets/images/logo.jpg',
+                  width: 150,
+                  height: 150,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -76,44 +72,6 @@ class WelcomeScreen extends StatelessWidget {
                   title: 'Soy Trabajador',
                   subtitle: 'Ofrezco mis servicios',
                   onTap: () => _abrir(context, 'worker'),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '¿Ya tienes una cuenta? ',
-                      style: textTheme.bodySmall?.copyWith(
-                        fontSize: 12,
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => _abrir(context, 'client'),
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Iniciar sesión',
-                              style: textTheme.titleMedium?.copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.secondary,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.chevron_right,
-                              size: 16,
-                              color: AppColors.secondary,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),

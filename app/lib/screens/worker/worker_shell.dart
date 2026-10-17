@@ -54,7 +54,19 @@ class _WorkerShellState extends State<WorkerShell> {
           children: [
             // LOGO: reemplaza el Icon por
             // Image.asset('assets/images/logo.png', height: 32)
-            const Icon(Icons.handyman, color: AppColors.tertiary, size: 28),
+            Image.asset(
+              'assets/images/trabajador.png',
+              width: 32,
+              height: 32,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.handyman,
+                  color: AppColors.tertiary,
+                  size: 28,
+                );
+              },
+            ),
             const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,8 +127,7 @@ class _WorkerShellState extends State<WorkerShell> {
                   backgroundColor: AppColors.surfaceContainerHigh,
                   // AVATAR: reemplaza el child por
                   // backgroundImage: AssetImage('assets/images/avatar_default.png')
-                  child: Icon(Icons.person,
-                      size: 18, color: AppColors.onSurfaceVariant),
+                  child: Icon(Icons.person, color: AppColors.onSurfaceVariant),
                 ),
               ),
             ),
