@@ -45,18 +45,6 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 280),
-                  child: Text(
-                    'Selecciona tu perfil para ingresar a la plataforma',
-                    textAlign: TextAlign.center,
-                    style: textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
-                      height: 18 / 12,
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 24),
                 _RoleCard(
                   icon: Icons.person,
