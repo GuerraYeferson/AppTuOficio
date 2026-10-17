@@ -22,7 +22,13 @@ class WorkerController extends Controller
         }
 
         if ($request->filled('district')) {
-            $query->where('district', 'like', '%' . $request->string('district') . '%');
+            $district = $request->string('district')->toString();
+
+            // Aparece si cubre ese distrito o si cubre "Todo Tacna"
+            $query->where(function ($q) use ($district) {
+                $q->whereJsonContains('district', $district)
+                  ->orWhereJsonContains('district', config('districts.all'));
+            });
         }
 
         if ($request->filled('search')) {

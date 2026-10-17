@@ -20,6 +20,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/trades/{id}', [TradeController::class, 'update']);
     Route::delete('/trades/{id}', [TradeController::class, 'destroy']);
 
+    Route::get('/districts', fn () => response()->json([
+        'districts' => config('districts.list'),
+        'all' => config('districts.all'),
+    ]));
+
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'store']);
     Route::put('/profile', [ProfileController::class, 'update']);

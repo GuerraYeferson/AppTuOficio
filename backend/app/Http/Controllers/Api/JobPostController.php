@@ -55,6 +55,7 @@ class JobPostController extends Controller
 
         $data = $request->validate($this->rules());
         $data = $this->cleanData($data);
+        $data['district'] = $user->clientProfile->district; // viene del perfil
 
         $post = $user->jobPosts()->create($data);
         $post->load('trade:id,name');
@@ -135,7 +136,6 @@ class JobPostController extends Controller
             'trade_id' => ['nullable', 'integer', 'exists:trades,id', 'required_without:other_trade'],
             'other_trade' => ['nullable', 'string', 'max:100', 'required_without:trade_id'],
             'budget' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
-            'district' => ['required', 'string', 'max:150'],
             'location_link' => ['nullable', 'url', 'max:500'],
             'urgency' => ['required', 'in:urgent,scheduled'],
             'desired_date' => ['nullable', 'date', 'after_or_equal:today'],
