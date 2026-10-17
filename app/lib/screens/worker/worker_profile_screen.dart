@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
+import '../../config/districts.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/password_dialog.dart';
 import '../welcome_screen.dart';
@@ -24,12 +25,11 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
   final _firstCtrl = TextEditingController();
   final _lastCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _districtCtrl = TextEditingController();
+  List<String> _districts = [];
   final _yearsCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _otherCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
-
   bool _loading = true;
   bool _loadError = false;
   bool _editing = false;
@@ -54,7 +54,6 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
     _firstCtrl.dispose();
     _lastCtrl.dispose();
     _phoneCtrl.dispose();
-    _districtCtrl.dispose();
     _yearsCtrl.dispose();
     _descCtrl.dispose();
     _otherCtrl.dispose();
@@ -128,7 +127,7 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
     _firstCtrl.text = (_profile?['first_name'] ?? '').toString();
     _lastCtrl.text = (_profile?['last_name'] ?? '').toString();
     _phoneCtrl.text = (_profile?['phone'] ?? '').toString();
-    _districtCtrl.text = (_profile?['district'] ?? '').toString();
+    _districts = _districtsFromProfile();
     _yearsCtrl.text = _profile == null
         ? ''
         : (_profile!['years_experience'] ?? 0).toString();
@@ -136,6 +135,24 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
     _otherCtrl.text = (_profile?['other_trades'] ?? '').toString();
     _emailCtrl.text = (_user['email'] ?? '').toString();
     _selected = _idsFromProfile();
+  }
+
+    List<String> _districtsFromProfile() {
+    final d = _profile?['district'];
+    if (d is List) return d.map((e) => e.toString()).toList();
+    return [];
+  }
+
+  void _toggleDistrict(String d) {
+    setState(() {
+      if (d == Districts.all) {
+        // "Todo Tacna" reemplaza a las demás
+        _districts = _districts.contains(d) ? [] : [d];
+      } else {
+        _districts.remove(Districts.all);
+        if (!_districts.remove(d)) _districts.add(d);
+      }
+    });
   }
 
   bool get _available => _profile?['is_available'] == true;
@@ -204,6 +221,10 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
 
     final other = _otherCtrl.text.trim();
     if (_selected.isEmpty && other.isEmpty) {
+      if (_districts.isEmpty) {
+      _aviso('Elige al menos un distrito de atención');
+      return;
+      }
       _aviso('Elige al menos un oficio o escribe uno en "Otros oficios"');
       return;
     }
@@ -214,7 +235,7 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
       'first_name': _firstCtrl.text.trim(),
       'last_name': _lastCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim(),
-      'district': _districtCtrl.text.trim(),
+      'district': _districts,
       'description': _descCtrl.text.trim(),
       'years_experience': int.parse(_yearsCtrl.text.trim()),
       'is_available': _profile == null ? true : _available,
@@ -475,7 +496,10 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
         ? 'Trabajador'
         : [...names, ...others].join(', ');
     final years = (_profile?['years_experience'] ?? 0).toString();
-    final district = (_profile?['district'] ?? '').toString();
+    final districtList = _districtsFromProfile();
+    final district = districtList.length <= 2
+        ? districtList.join(', ')
+        : '${districtList.length} distritos';
 
     return _card(
       child: Column(
@@ -793,16 +817,9 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
             enabled: false,
           ),
           const SizedBox(height: 8),
-          _DataField(
-            label: 'Distrito / zona de atención',
-            controller: _districtCtrl,
-            icon: Icons.location_on_outlined,
-            enabled: _editing,
-            maxLength: 150,
-            validator: (v) => (v == null || v.trim().isEmpty)
-                ? 'Escribe tu distrito o zona'
-                : null,
-          ),
+
+          _buildDistrictPicker(),
+
           const SizedBox(height: 8),
           _DataField(
             label: 'Años de experiencia',
@@ -890,6 +907,60 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
           ],
         ],
       ),
+    );
+  }
+
+    Widget _buildDistrictPicker() {
+    final options = [Districts.all, ...Districts.list];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _editing
+              ? 'DISTRITOS DE ATENCIÓN (ELIGE UNO O VARIOS)'
+              : 'DISTRITOS DE ATENCIÓN',
+          style: _t(
+              size: 10,
+              weight: FontWeight.w700,
+              color: AppColors.onSurfaceVariant,
+              spacing: 0.8),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: _editing
+                ? AppColors.surfaceContainerHigh
+                : AppColors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: _editing
+              ? Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: options
+                      .map((d) => _SelectChip(
+                            label: d,
+                            selected: _districts.contains(d),
+                            onTap: () => _toggleDistrict(d),
+                          ))
+                      .toList(),
+                )
+              : (_districts.isEmpty
+                  ? Text('Sin elegir',
+                      style: _t(size: 12, color: AppColors.onSurfaceVariant))
+                  : Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: _districts
+                          .map((d) => _MiniChip(
+                              icon: Icons.location_on_outlined, text: d))
+                          .toList(),
+                    )),
+        ),
+      ],
     );
   }
 

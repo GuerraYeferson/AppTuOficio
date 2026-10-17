@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../config/districts.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../welcome_screen.dart';
@@ -18,7 +19,7 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
   final _firstCtrl = TextEditingController();
   final _lastCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _districtCtrl = TextEditingController();
+  String? _district;
   final _emailCtrl = TextEditingController();
 
   bool _loading = true;
@@ -43,7 +44,6 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
     _firstCtrl.dispose();
     _lastCtrl.dispose();
     _phoneCtrl.dispose();
-    _districtCtrl.dispose();
     _emailCtrl.dispose();
     super.dispose();
   }
@@ -92,7 +92,8 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
     _firstCtrl.text = (_profile?['first_name'] ?? '').toString();
     _lastCtrl.text = (_profile?['last_name'] ?? '').toString();
     _phoneCtrl.text = (_profile?['phone'] ?? '').toString();
-    _districtCtrl.text = (_profile?['district'] ?? '').toString();
+    final d = (_profile?['district'] ?? '').toString();
+    _district = Districts.list.contains(d) ? d : null;
     _emailCtrl.text = (_user['email'] ?? '').toString();
   }
 
@@ -119,7 +120,7 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
       'first_name': _firstCtrl.text.trim(),
       'last_name': _lastCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim(),
-      'district': _districtCtrl.text.trim(),
+      'district': _district,
     };
 
     final res = _profile == null
@@ -491,15 +492,56 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
               enabled: false,
             ),
             const SizedBox(height: 8),
-            _DataField(
-              label: 'Distrito / zona',
-              controller: _districtCtrl,
-              icon: Icons.location_on_outlined,
-              enabled: _editing,
-              validator: (v) => (v == null || v.trim().isEmpty)
-                  ? 'Escribe tu distrito o zona'
-                  : null,
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'DISTRITO',
+                  style: _t(
+                      size: 10,
+                      weight: FontWeight.w700,
+                      color: AppColors.onSurfaceVariant,
+                      spacing: 0.8),
+                ),
+                const SizedBox(height: 4),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('district_${_editing}_$_district'),
+                  value: _district,
+                  isExpanded: true,
+                  dropdownColor: AppColors.surfaceContainerHigh,
+                  icon: const Icon(Icons.location_on_outlined,
+                      size: 18, color: AppColors.outline),
+                  style: _t(),
+                  hint: Text('Selecciona tu distrito',
+                      style: _t(color: AppColors.outline)),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: _editing
+                        ? AppColors.surfaceContainer
+                        : AppColors.surfaceContainerLowest,
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 13, horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    errorStyle:
+                        const TextStyle(color: AppColors.error, fontSize: 11),
+                  ),
+                  items: Districts.list
+                      .map((d) => DropdownMenuItem<String>(
+                            value: d,
+                            child: Text(d, overflow: TextOverflow.ellipsis),
+                          ))
+                      .toList(),
+                  onChanged:
+                      _editing ? (v) => setState(() => _district = v) : null,
+                  validator: (v) => v == null ? 'Selecciona tu distrito' : null,
+                ),
+              ],
             ),
+
             const SizedBox(height: 16),
             SizedBox(
               height: 48,

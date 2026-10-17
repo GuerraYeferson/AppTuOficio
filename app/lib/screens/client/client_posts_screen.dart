@@ -126,7 +126,6 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
 
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  final _districtCtrl = TextEditingController();
   final _budgetCtrl = TextEditingController();
   final _linkCtrl = TextEditingController();
   final _otherTradeCtrl = TextEditingController();
@@ -143,6 +142,8 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
   bool _formOpen = false;
   bool _saving = false;
   int? _editingId;
+  String? _editingDistrict;
+  String? _clientDistrict;
   int _formSeq = 0;
 
   int? _tradeSel; // id del oficio, o _otherValue
@@ -160,7 +161,6 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
-    _districtCtrl.dispose();
     _budgetCtrl.dispose();
     _linkCtrl.dispose();
     _otherTradeCtrl.dispose();
@@ -185,9 +185,11 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
     final res = await Future.wait([
       ApiService.get('/job-posts', query: {'page': '1'}),
       ApiService.get('/trades'),
+      ApiService.get('/profile'),
     ]);
     final postsRes = res[0];
     final tradesRes = res[1];
+    final profileRes = res[2];
 
     if (!mounted) return;
 
@@ -210,6 +212,10 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
       _hasMore = postsRes.data['next_page_url'] != null;
       _loading = false;
       _loadError = false;
+
+      _clientDistrict = profileRes.ok
+          ? (profileRes.data['profile']['district'] ?? '').toString()
+          : null;
     });
   }
 
@@ -233,7 +239,6 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
   void _limpiarForm() {
     _titleCtrl.clear();
     _descCtrl.clear();
-    _districtCtrl.clear();
     _budgetCtrl.clear();
     _linkCtrl.clear();
     _otherTradeCtrl.clear();
@@ -270,7 +275,6 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
     _limpiarForm();
     _titleCtrl.text = (p['title'] ?? '').toString();
     _descCtrl.text = (p['description'] ?? '').toString();
-    _districtCtrl.text = (p['district'] ?? '').toString();
     _linkCtrl.text = (p['location_link'] ?? '').toString();
 
     final budget = _toDouble(p['budget']);
@@ -289,6 +293,7 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
 
     setState(() {
       _editingId = (p['id'] as num).toInt();
+      _editingDistrict = (p['district'] ?? '').toString();
       _formOpen = true;
       _formSeq++;
     });
@@ -332,7 +337,6 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
       'trade_id': esOtro ? null : _tradeSel,
       'other_trade': esOtro ? _otherTradeCtrl.text.trim() : null,
       'budget': budgetText.isEmpty ? null : double.parse(budgetText),
-      'district': _districtCtrl.text.trim(),
       'location_link': link.isEmpty ? null : link,
       'urgency': _urgency,
       'desired_date':
@@ -880,16 +884,29 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
             ),
             const SizedBox(height: 16),
 
-            _LabeledField(
-              label: 'Zona o distrito',
-              required: true,
-              controller: _districtCtrl,
-              hint: 'Ej: Gregorio Albarracín',
-              icon: Icons.location_on_outlined,
-              maxLength: 150,
-              validator: (v) => (v == null || v.trim().isEmpty)
-                  ? 'Escribe tu zona o distrito'
-                  : null,
+                        Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.location_on_outlined,
+                      size: 18, color: AppColors.secondary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      (editando ? _editingDistrict : _clientDistrict) == null
+                          ? 'Completa tu perfil para poder publicar'
+                          : '${editando ? 'Zona del anuncio' : 'Se publicará en'}: '
+                              '${editando ? _editingDistrict : _clientDistrict}',
+                      style: _ts(context,
+                          size: 12, color: AppColors.onSurfaceVariant),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
 
