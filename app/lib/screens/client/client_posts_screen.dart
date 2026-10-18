@@ -280,11 +280,11 @@ class _ClientPostsScreenState extends State<ClientPostsScreen> {
     final budget = _toDouble(p['budget']);
     _budgetCtrl.text = budget == null ? '' : _fmtMoney(budget);
 
-    if (p['trade_id'] != null) {
-      _tradeSel = (p['trade_id'] as num).toInt();
-    } else if (p['other_trade'] != null) {
-      _tradeSel = _otherValue;
-      _otherTradeCtrl.text = p['other_trade'].toString();
+    // Si el oficio del anuncio fue desactivado, el desplegable debe seguir mostrándolo
+    if (p['trade_id'] != null &&
+        p['trade'] is Map &&
+        !_trades.any((t) => t['id'] == p['trade_id'])) {
+      _trades.add(Map<String, dynamic>.from(p['trade'] as Map));
     }
 
     _urgency = (p['urgency'] ?? 'urgent').toString();
