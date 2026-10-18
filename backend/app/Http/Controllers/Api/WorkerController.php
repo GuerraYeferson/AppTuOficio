@@ -12,7 +12,8 @@ class WorkerController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = WorkerProfile::with('trades:id,name')
-            ->where('is_available', true);
+            ->where('is_available', true)
+            ->whereHas('user', fn ($q) => $q->where('is_active', true));
 
         if ($request->filled('trade_id')) {
             $tradeId = $request->integer('trade_id');
@@ -46,7 +47,9 @@ class WorkerController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $worker = WorkerProfile::with('trades:id,name')->find($id);
+        $worker = WorkerProfile::with('trades:id,name')
+            ->whereHas('user', fn ($q) => $q->where('is_active', true))
+            ->find($id);
 
         if (! $worker) {
             return response()->json(['message' => 'Trabajador no encontrado'], 404);

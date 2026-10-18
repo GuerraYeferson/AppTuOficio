@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
 import '../theme/app_colors.dart';
+import 'admin/admin_shell.dart';
 import 'client/client_shell.dart';
 import 'worker/worker_shell.dart';
 
@@ -92,7 +93,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     // Si la cuenta es de otro rol, se cierra la sesión recién abierta
     // y se muestra el mismo mensaje genérico, sin revelar el rol real
-    if (_isLogin && user['role'] != _role) {
+    if (_isLogin && user['role'] != 'admin' && user['role'] != _role) {
       await ApiService.post('/logout');
       await ApiService.clearToken();
       if (!mounted) return;
@@ -101,9 +102,11 @@ class _AuthScreenState extends State<AuthScreen> {
       return;
     }
 
-    final Widget destino = user['role'] == 'worker'
-        ? WorkerShell(user: user)
-        : ClientShell(user: user);
+    final Widget destino = switch (user['role']) {
+      'admin' => AdminShell(user: user),
+      'worker' => WorkerShell(user: user),
+      _ => ClientShell(user: user),
+    };
 
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => destino),

@@ -9,6 +9,13 @@ class Trade extends Model
 {
     protected $fillable = ['name'];
 
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
     public function workers(): BelongsToMany
     {
         return $this->belongsToMany(WorkerProfile::class, 'worker_trades');
