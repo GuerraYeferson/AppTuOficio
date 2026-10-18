@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\JobPostController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\TradeController;
 use App\Http\Controllers\Api\WorkerController;
+use App\Http\Middleware\EnsureAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -16,10 +18,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/me', [AuthController::class, 'destroy']);
 
     Route::get('/trades', [TradeController::class, 'index']);
-    Route::post('/trades', [TradeController::class, 'store']);
-    Route::put('/trades/{id}', [TradeController::class, 'update']);
-    Route::delete('/trades/{id}', [TradeController::class, 'destroy']);
-
     Route::get('/districts', fn () => response()->json([
         'districts' => config('districts.list'),
         'all' => config('districts.all'),
@@ -37,4 +35,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/job-posts/{id}', [JobPostController::class, 'show']);
     Route::put('/job-posts/{id}', [JobPostController::class, 'update']);
     Route::delete('/job-posts/{id}', [JobPostController::class, 'destroy']);
+
+    // ---------- Solo administrador ----------
+    Route::prefix('admin')->middleware(EnsureAdmin::class)->group(function () {
+        Route::get('/users', [AdminController::class, 'users']);
+        Route::get('/users/{id}', [AdminController::class, 'showUser']);
+        Route::post('/users/{id}/suspend', [AdminController::class, 'suspendUser']);
+        Route::post('/users/{id}/reactivate', [AdminController::class, 'reactivateUser']);
+
+        Route::get('/job-posts', [AdminController::class, 'jobPosts']);
+        Route::post('/job-posts/{id}/close', [AdminController::class, 'closeJobPost']);
+        Route::delete('/job-posts/{id}', [AdminController::class, 'deleteJobPost']);
+
+        Route::get('/trades', [AdminController::class, 'trades']);
+        Route::post('/trades', [AdminController::class, 'storeTrade']);
+        Route::put('/trades/{id}', [AdminController::class, 'updateTrade']);
+        Route::post('/trades/{id}/toggle', [AdminController::class, 'toggleTrade']);
+    });
 });

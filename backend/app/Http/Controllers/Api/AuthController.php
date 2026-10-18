@@ -45,6 +45,12 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if (! $user->is_active) {
+            return response()->json([
+                'message' => 'Tu cuenta está suspendida. Contacta al administrador.',
+            ], 403);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -90,9 +96,13 @@ class AuthController extends Controller
 
     private function userData(User $user): array
     {
-        $profileCompleted = $user->isWorker()
-            ? $user->workerProfile()->exists()
-            : $user->clientProfile()->exists();
+        if ($user->isAdmin()) {
+            $profileCompleted = true; // el admin no tiene perfil
+        } else {
+            $profileCompleted = $user->isWorker()
+                ? $user->workerProfile()->exists()
+                : $user->clientProfile()->exists();
+        }
 
         return [
             'id' => $user->id,

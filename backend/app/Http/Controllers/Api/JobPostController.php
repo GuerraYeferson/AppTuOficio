@@ -20,10 +20,11 @@ class JobPostController extends Controller
 
         if ($user->isClient()) {
             $query->where('user_id', $user->id);
-        } else {
-            $query->where('status', 'open');
+        }else{
+            $query->where('status', 'open') 
+                ->whereHas('user', fn ($q) => $q->where('is_active', true));
         }
-
+        
         if ($request->filled('trade_id')) {
             $query->where('trade_id', $request->integer('trade_id'));
         }
